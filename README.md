@@ -355,13 +355,8 @@ for (j = 0; j < 3; j++) {
  ```
 
 ## OUTPUT:
-OUTPUT: ![image](https://github.com/user-attachments/assets/d47c96a2-619b-4c2e-aadd-0fec73717053)
+  ![image](https://github.com/user-attachments/assets/d47c96a2-619b-4c2e-aadd-0fec73717053)
 
-Simulating Hill Cipher
-
-
-Input Message : SecurityLaboratory
-Padded Message : SECURITYLABORATORY Encrypted Message : EACSDKLCAEFQDUKSXU Decrypted Message : SECURITYLABORATORY
 ## RESULT:
 The program is executed successfully
 
@@ -460,14 +455,8 @@ printf("%c", 65 + (value % 26));
  ```
 
 ## OUTPUT:
-OUTPUT : ![image](https://github.com/user-attachments/assets/6b1948f0-a435-4a6d-b89b-8a33be729037)
+ ![image](https://github.com/user-attachments/assets/6b1948f0-a435-4a6d-b89b-8a33be729037)
 
-
-Simulating Vigenere Cipher
-
-
-Input Message : SecurityLaboratory
-Encrypted Message : NMIYEMKCNIQVVROWXC Decrypted Message : SECURITYLABORATORY
 ## RESULT:
 The program is executed successfully
 
@@ -546,11 +535,8 @@ d[j] = c[i];
  }
  ```
 ## OUTPUT:
-OUTPUT:
+ 
 ![image](https://github.com/user-attachments/assets/1b0a429d-1ba5-4ae6-945f-7e673bc278bd)
 
-Enter a Secret Message wearediscovered
-Enter number of rails 2
-waeicvrderdsoee
 ## RESULT:
 The program is executed successfully
