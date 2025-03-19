@@ -31,7 +31,7 @@ Implementation using C or pyhton code
 
 ## PROGRAM:
 PROGRAM:
-```
+```C
 CaearCipher.
  
   #include <stdio.h>
