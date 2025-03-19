@@ -132,210 +132,140 @@ To decrypt, use the INVERSE (opposite) of the last 3 rules, and the 1st as-is (d
 
 ## PROGRAM:
 ```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+ 
+#include<stdio.h>
+#include<string.h>
+#include<ctype.h>
+#define MX 5
 
-#define SIZE 30
-
-// Function to convert the string to lowercase
-void toLowerCase(char plain[], int ps) {
-    for (int i = 0; i < ps; i++) {
-        if (plain[i] >= 'A' && plain[i] <= 'Z')
-            plain[i] += 32;
+void playfair(char ch1, char ch2, char key[MX][MX])
+{
+    int i, j, w, x, y, z;
+    FILE *out;
+    if ((out = fopen("cipher.txt", "a+")) == NULL)
+    {
+        printf("File Corrupted.");
     }
-}
-
-// Function to remove all spaces in a string
-int removeSpaces(char* plain, int ps) {
-    int i, count = 0;
-    for (i = 0; i < ps; i++) {
-        if (plain[i] != ' ') {
-            plain[count++] = plain[i];
+    for (i = 0; i < MX; i++)
+    {
+        for (j = 0; j < MX; j++)
+        {
+            if (ch1 == key[i][j])
+            {
+                w = i;
+                x = j;
+            }
+            else if (ch2 == key[i][j])
+            {
+                y = i;
+                z = j;
+            }
         }
     }
-    plain[count] = '\0';
-    return count;
+    if (w == y)
+    {
+        x = (x + 1) % 5;
+        z = (z + 1) % 5;
+        printf("%c%c", key[w][x], key[y][z]);
+        fprintf(out, "%c%c", key[w][x], key[y][z]);
+    } 
+    else if (x == z) 
+    {
+        w = (w + 1) % 5;
+        y = (y + 1) % 5;
+        printf("%c%c", key[w][x], key[y][z]);
+        fprintf(out, "%c%c", key[w][x], key[y][z]);
+    } 
+    else 
+    {
+        printf("%c%c", key[w][z], key[y][x]);
+        fprintf(out, "%c%c", key[w][z], key[y][x]);
+    }
+    fclose(out);
 }
 
-// Function to generate the 5x5 key square
-void generateKeyTable(char key[], int ks, char keyT[5][5]) {
-    int i, j, k;
-    int dicty[26] = {0};
+int main() 
+{
+    int i, j, k = 0, l, m = 0, n;
+    char key[MX][MX], keyminus[25], keystr[10], str[25] = {0};
+    char alpa[26] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
+    printf("\nEnter key: ");
+    fgets(keystr, sizeof(keystr), stdin);
+    keystr[strcspn(keystr, "\n")] = 0; // Remove newline character
 
-    // Marking characters that appear in the key (excluding 'j')
-    for (i = 0; i < ks; i++) {
-        if (key[i] != 'j') {
-            dicty[key[i] - 'a'] = 2;
+    printf("\nEnter the plain text: ");
+    fgets(str, sizeof(str), stdin);
+    str[strcspn(str, "\n")] = 0; // Remove newline character
+    n = strlen(keystr);
+    for (i = 0; i < n; i++) 
+    {
+        if (keystr[i] == 'j') keystr[i] = 'i';
+        else if (keystr[i] == 'J') keystr[i] = 'I';
+        keystr[i] = toupper(keystr[i]);
+    }
+    for (i = 0; i < strlen(str); i++) {
+        if (str[i] == 'j') str[i] = 'i';
+        else if (str[i] == 'J') str[i] = 'I';
+        str[i] = toupper(str[i]);
+    }
+    j = 0;
+    for (i = 0; i < 26; i++)
+    {
+        for (k = 0; k < n; k++)
+        {
+            if (keystr[k] == alpa[i]) break;
+            else if (alpa[i] == 'J') break;
+        }
+        if (k == n)
+        {
+            keyminus[j] = alpa[i];
+            j++;
         }
     }
-    dicty['j' - 'a'] = 1; // Mark 'j' as already used
-
-    i = 0, j = 0;
-    for (k = 0; k < ks; k++) {
-        if (dicty[key[k] - 'a'] == 2) {
-            dicty[key[k] - 'a'] -= 1;
-            keyT[i][j++] = key[k];
-
-            if (j == 5) {
+    k = 0;
+    for (i = 0; i < MX; i++) 
+    {
+        for (j = 0; j < MX; j++)
+        {
+            if (k < n)
+            {
+                key[i][j] = keystr[k];
+                k++;
+            } 
+            else
+            {
+                key[i][j] = keyminus[m];
+                m++;
+            }
+            printf("%c ", key[i][j]);
+        }
+        printf("\n");
+    }
+    printf("\n\nEntered text :%s\nCipher Text :",str);
+    for (i = 0; i < strlen(str); i++) 
+    {
+        if (str[i] == 'J') str[i] = 'I';
+        if (str[i + 1] == '\0') playfair(str[i], 'X', key);
+        else
+        {
+            if (str[i + 1] == 'J') str[i + 1] = 'I';
+            if (str[i] == str[i + 1]) playfair(str[i], 'X', key);
+            else 
+            {
+                playfair(str[i], str[i + 1], key);
                 i++;
-                j = 0;
             }
         }
+  
     }
-
-    // Filling the rest of the key table with remaining characters
-    for (k = 0; k < 26; k++) {
-        if (dicty[k] == 0 && (char)(k + 'a') != 'j') {
-            keyT[i][j++] = (char)(k + 'a');
-            if (j == 5) {
-                i++;
-                j = 0;
-            }
-        }
-    }
-}
-
-// Function to search for the characters of a digraph in the key square
-void search(char keyT[5][5], char a, char b, int arr[]) {
-    int i, j;
-    if (a == 'j') a = 'i';
-    if (b == 'j') b = 'i';
-
-    for (i = 0; i < 5; i++) {
-        for (j = 0; j < 5; j++) {
-            if (keyT[i][j] == a) {
-                arr[0] = i;
-                arr[1] = j;
-            }
-            if (keyT[i][j] == b) {
-                arr[2] = i;
-                arr[3] = j;
-            }
-        }
-    }
-}
-
-// Function to find the modulus with 5
-int mod5(int a) {
-    return (a + 5) % 5;
-}
-
-// Function to make the plain text length even
-int prepare(char str[], int ptrs) {
-    if (ptrs % 2 != 0) {
-        str[ptrs++] = 'z'; // Add padding 'z'
-        str[ptrs] = '\0';
-    }
-    return ptrs;
-}
-
-// Function for performing the encryption
-void encrypt(char str[], char keyT[5][5], int ps) {
-    int i, a[4];
-    for (i = 0; i < ps; i += 2) {
-        search(keyT, str[i], str[i + 1], a);
-
-        if (a[0] == a[2]) { // Same row
-            str[i] = keyT[a[0]][mod5(a[1] + 1)];
-            str[i + 1] = keyT[a[2]][mod5(a[3] + 1)];
-        } 
-        else if (a[1] == a[3]) { // Same column
-            str[i] = keyT[mod5(a[0] + 1)][a[1]];
-            str[i + 1] = keyT[mod5(a[2] + 1)][a[3]];
-        } 
-        else { // Rectangle swap
-            str[i] = keyT[a[0]][a[3]];
-            str[i + 1] = keyT[a[2]][a[1]];
-        }
-    }
-}
-
-// Function for performing the decryption
-void decrypt(char str[], char keyT[5][5], int ps) {
-    int i, a[4];
-    for (i = 0; i < ps; i += 2) {
-        search(keyT, str[i], str[i + 1], a);
-
-        if (a[0] == a[2]) { // Same row
-            str[i] = keyT[a[0]][mod5(a[1] - 1)];
-            str[i + 1] = keyT[a[2]][mod5(a[3] - 1)];
-        } 
-        else if (a[1] == a[3]) { // Same column
-            str[i] = keyT[mod5(a[0] - 1)][a[1]];
-            str[i + 1] = keyT[mod5(a[2] - 1)][a[3]];
-        } 
-        else { // Rectangle swap
-            str[i] = keyT[a[0]][a[3]];
-            str[i + 1] = keyT[a[2]][a[1]];
-        }
-    }
-}
-
-// Function to encrypt using Playfair Cipher
-void encryptByPlayfairCipher(char str[], char key[]) {
-    int ps, ks;
-    char keyT[5][5];
-
-    ks = strlen(key);
-    ks = removeSpaces(key, ks);
-    toLowerCase(key, ks);
-
-    ps = strlen(str);
-    toLowerCase(str, ps);
-    ps = removeSpaces(str, ps);
-    ps = prepare(str, ps);
-
-    generateKeyTable(key, ks, keyT);
-    encrypt(str, keyT, ps);
-}
-
-// Function to decrypt using Playfair Cipher
-void decryptByPlayfairCipher(char str[], char key[]) {
-    int ps, ks;
-    char keyT[5][5];
-
-    ks = strlen(key);
-    ks = removeSpaces(key, ks);
-    toLowerCase(key, ks);
-
-    ps = strlen(str);
-    toLowerCase(str, ps);
-    ps = removeSpaces(str, ps);
-
-    generateKeyTable(key, ks, keyT);
-    decrypt(str, keyT, ps);
-}
-
-// Driver code
-int main() {
-    char str[SIZE], key[SIZE];
-
-    printf("Simulating Playfair Cipher\n");
-
-    // Key to be used
-    strcpy(key, "Monopoly");
-    printf("Key text: %s\n", key);
-
-    // Plaintext to be encrypted
-    strcpy(str, "VINODH");
-    printf("Plain text: %s\n", str);
-
-    // Encrypt using Playfair Cipher
-    encryptByPlayfairCipher(str, key);
-    printf("Cipher text: %s\n", str);
-
-    // Decrypt using Playfair Cipher
-    decryptByPlayfairCipher(str, key);
-    printf("Decrypted text: %s\n", str);
-
+     printf("\nDecrypted text:%s",str);
     return 0;
 }
 ```
 
 ## OUTPUT:
-Output: ![Screenshot 2025-03-19 135229](https://github.com/user-attachments/assets/e6e22266-d9ae-44b4-a5f9-f04e625bf1de)
+Output: ![image](https://github.com/user-attachments/assets/656d5dbb-9087-4cf0-a31a-9e58a07a258d)
+
 
 
 Key text: Monarchy Plain text: instruments Cipher text: gatlmzclrqtx
