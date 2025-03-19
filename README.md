@@ -335,7 +335,8 @@ int main() {
 ```
 
 ## OUTPUT:
-Output: 
+Output: ![Screenshot 2025-03-19 135229](https://github.com/user-attachments/assets/e6e22266-d9ae-44b4-a5f9-f04e625bf1de)
+
 
 Key text: Monarchy Plain text: instruments Cipher text: gatlmzclrqtx
 
