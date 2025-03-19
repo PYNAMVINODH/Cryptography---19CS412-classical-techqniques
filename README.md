@@ -264,12 +264,9 @@ int main()
 ```
 
 ## OUTPUT:
-Output:
+ 
 ![image](https://github.com/user-attachments/assets/656d5dbb-9087-4cf0-a31a-9e58a07a258d)
 
-
-
-Key text: Monarchy Plain text: instruments Cipher text: gatlmzclrqtx
 
 ## RESULT:
 The program is executed successfully
