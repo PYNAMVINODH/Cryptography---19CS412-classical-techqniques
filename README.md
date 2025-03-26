@@ -133,139 +133,169 @@ To decrypt, use the INVERSE (opposite) of the last 3 rules, and the 1st as-is (d
 ## PROGRAM:
 ```c
  
-#include<stdio.h>
-#include<string.h>
-#include<ctype.h>
-#define MX 5
+ #include <stdio.h>
+#include <string.h>
+#include <ctype.h>
 
-void playfair(char ch1, char ch2, char key[MX][MX])
-{
-    int i, j, w, x, y, z;
-    FILE *out;
-    if ((out = fopen("cipher.txt", "a+")) == NULL)
-    {
-        printf("File Corrupted.");
+#define MAX_TEXT_LENGTH 100
+
+// Function to prepare text for encryption
+void prepare_text(char *text) {
+    int length = strlen(text);
+    for (int i = 0; i < length; i++) {
+        text[i] = tolower(text[i]);
     }
-    for (i = 0; i < MX; i++)
-    {
-        for (j = 0; j < MX; j++)
-        {
-            if (ch1 == key[i][j])
-            {
-                w = i;
-                x = j;
+
+    // Replace spaces and 'j' with 'i'
+    for (int i = 0; i < length; i++) {
+        if (text[i] == ' ') {
+            for (int j = i; j < length; j++) {
+                text[j] = text[j + 1];
             }
-            else if (ch2 == key[i][j])
-            {
-                y = i;
-                z = j;
-            }
+            length--;
+            i--;
+        }
+        if (text[i] == 'j') {
+            text[i] = 'i';
         }
     }
-    if (w == y)
-    {
-        x = (x + 1) % 5;
-        z = (z + 1) % 5;
-        printf("%c%c", key[w][x], key[y][z]);
-        fprintf(out, "%c%c", key[w][x], key[y][z]);
-    } 
-    else if (x == z) 
-    {
-        w = (w + 1) % 5;
-        y = (y + 1) % 5;
-        printf("%c%c", key[w][x], key[y][z]);
-        fprintf(out, "%c%c", key[w][x], key[y][z]);
-    } 
-    else 
-    {
-        printf("%c%c", key[w][z], key[y][x]);
-        fprintf(out, "%c%c", key[w][z], key[y][x]);
+
+    // Add 'x' between identical consecutive letters
+    for (int i = 0; i < length - 1; i++) {
+        if (text[i] == text[i + 1]) {
+            for (int j = length; j > i + 1; j--) {
+                text[j] = text[j - 1];
+            }
+            text[i + 1] = 'x';
+            length++;
+        }
     }
-    fclose(out);
+
+    // If text length is odd, append 'z'
+    if (length % 2 != 0) {
+        text[length] = 'z';
+        text[length + 1] = '\0';
+    }
 }
 
-int main() 
-{
-    int i, j, k = 0, l, m = 0, n;
-    char key[MX][MX], keyminus[25], keystr[10], str[25] = {0};
-    char alpa[26] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
-    printf("\nEnter key: ");
-    fgets(keystr, sizeof(keystr), stdin);
-    keystr[strcspn(keystr, "\n")] = 0; // Remove newline character
+// Function to generate the Playfair Cipher key table
+void generate_key_table(char *key, char key_table[5][5]) {
+    int key_len = strlen(key);
+    int used[26] = {0};
+    int idx = 0;
 
-    printf("\nEnter the plain text: ");
-    fgets(str, sizeof(str), stdin);
-    str[strcspn(str, "\n")] = 0; // Remove newline character
-    n = strlen(keystr);
-    for (i = 0; i < n; i++) 
-    {
-        if (keystr[i] == 'j') keystr[i] = 'i';
-        else if (keystr[i] == 'J') keystr[i] = 'I';
-        keystr[i] = toupper(keystr[i]);
-    }
-    for (i = 0; i < strlen(str); i++) {
-        if (str[i] == 'j') str[i] = 'i';
-        else if (str[i] == 'J') str[i] = 'I';
-        str[i] = toupper(str[i]);
-    }
-    j = 0;
-    for (i = 0; i < 26; i++)
-    {
-        for (k = 0; k < n; k++)
-        {
-            if (keystr[k] == alpa[i]) break;
-            else if (alpa[i] == 'J') break;
-        }
-        if (k == n)
-        {
-            keyminus[j] = alpa[i];
-            j++;
+    // Add key characters to the table
+    for (int i = 0; i < key_len; i++) {
+        if (!used[key[i] - 'a']) {
+            used[key[i] - 'a'] = 1;
+            key_table[idx / 5][idx % 5] = key[i];
+            idx++;
         }
     }
-    k = 0;
-    for (i = 0; i < MX; i++) 
-    {
-        for (j = 0; j < MX; j++)
-        {
-            if (k < n)
-            {
-                key[i][j] = keystr[k];
-                k++;
-            } 
-            else
-            {
-                key[i][j] = keyminus[m];
-                m++;
-            }
-            printf("%c ", key[i][j]);
+
+    // Add remaining characters of the alphabet
+    for (char ch = 'a'; ch <= 'z'; ch++) {
+        if (ch != 'j' && !used[ch - 'a']) {
+            key_table[idx / 5][idx % 5] = ch;
+            idx++;
         }
-        printf("\n");
     }
-    printf("\n\nEntered text :%s\nCipher Text :",str);
-    for (i = 0; i < strlen(str); i++) 
-    {
-        if (str[i] == 'J') str[i] = 'I';
-        if (str[i + 1] == '\0') playfair(str[i], 'X', key);
-        else
-        {
-            if (str[i + 1] == 'J') str[i + 1] = 'I';
-            if (str[i] == str[i + 1]) playfair(str[i], 'X', key);
-            else 
-            {
-                playfair(str[i], str[i + 1], key);
-                i++;
+}
+
+// Function to find the position of a letter in the key table
+void find_position(char key_table[5][5], char letter, int *row, int *col) {
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
+            if (key_table[i][j] == letter) {
+                *row = i;
+                *col = j;
+                return;
             }
         }
-  
     }
-     printf("\nDecrypted text:%s",str);
+}
+
+// Function to encrypt the plain text
+void encrypt(char *plain_text, char key_table[5][5], char *cipher_text) {
+    int len = strlen(plain_text);
+    for (int i = 0; i < len; i += 2) {
+        char a = plain_text[i];
+        char b = plain_text[i + 1];
+
+        int row1, col1, row2, col2;
+        find_position(key_table, a, &row1, &col1);
+        find_position(key_table, b, &row2, &col2);
+
+        if (row1 == row2) {  // Same row
+            cipher_text[i] = key_table[row1][(col1 + 1) % 5];
+            cipher_text[i + 1] = key_table[row2][(col2 + 1) % 5];
+        } else if (col1 == col2) {  // Same column
+            cipher_text[i] = key_table[(row1 + 1) % 5][col1];
+            cipher_text[i + 1] = key_table[(row2 + 1) % 5][col2];
+        } else {  // Different row and column
+            cipher_text[i] = key_table[row1][col2];
+            cipher_text[i + 1] = key_table[row2][col1];
+        }
+    }
+}
+
+// Function to decrypt the cipher text
+void decrypt(char *cipher_text, char key_table[5][5], char *plain_text) {
+    int len = strlen(cipher_text);
+    for (int i = 0; i < len; i += 2) {
+        char a = cipher_text[i];
+        char b = cipher_text[i + 1];
+
+        int row1, col1, row2, col2;
+        find_position(key_table, a, &row1, &col1);
+        find_position(key_table, b, &row2, &col2);
+
+        if (row1 == row2) {  // Same row
+            plain_text[i] = key_table[row1][(col1 - 1 + 5) % 5];
+            plain_text[i + 1] = key_table[row2][(col2 - 1 + 5) % 5];
+        } else if (col1 == col2) {  // Same column
+            plain_text[i] = key_table[(row1 - 1 + 5) % 5][col1];
+            plain_text[i + 1] = key_table[(row2 - 1 + 5) % 5][col2];
+        } else {  // Different row and column
+            plain_text[i] = key_table[row1][col2];
+            plain_text[i + 1] = key_table[row2][col1];
+        }
+    }
+}
+
+int main() {
+    char key[MAX_TEXT_LENGTH], plain_text[MAX_TEXT_LENGTH], cipher_text[MAX_TEXT_LENGTH];
+    char key_table[5][5];
+
+    printf("Playfair Cipher\n");
+
+    printf("Enter the key: ");
+    fgets(key, MAX_TEXT_LENGTH, stdin);
+    key[strcspn(key, "\n")] = 0;  // Remove the newline character
+
+    printf("\nEnter the plaintext: ");
+    fgets(plain_text, MAX_TEXT_LENGTH, stdin);
+    plain_text[strcspn(plain_text, "\n")] = 0;  // Remove the newline character
+
+    prepare_text(plain_text);  // Prepare the text
+
+    generate_key_table(key, key_table);  // Generate the key table
+
+    encrypt(plain_text, key_table, cipher_text);  // Encrypt the plain text
+    printf("\nCipher Text: %s\n", cipher_text);
+
+    decrypt(cipher_text, key_table, plain_text);  // Decrypt the cipher text
+    printf("\nDecrypted Text: %s\n", plain_text);
+
     return 0;
 }
+
 ```
 
 ## OUTPUT:
  
-![image](https://github.com/user-attachments/assets/656d5dbb-9087-4cf0-a31a-9e58a07a258d)
+![image](https://github.com/user-attachments/assets/cc9df04a-1693-4ec1-bbb2-baf523bc03ab)
+
 
 
 ## RESULT:
